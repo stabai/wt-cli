@@ -58,12 +58,13 @@ Create `~/.wtrc` (JSON, all fields optional):
 
 ## Documentation
 
-Full user guide: **[docs/](./docs/index.md)**
+Full user guide: **[stabai.github.io/wt-cli](https://stabai.github.io/wt-cli/)**
 
-- [Commands](./docs/commands.md) — complete reference for every subcommand
-- [Configuration](./docs/configuration.md) — all `~/.wtrc` options
-- [Shell Integration](./docs/shell-integration.md) — how the cd protocol works
-- [Completions](./docs/completions.md) — tab completion and branch grouping
+- [Getting Started](https://stabai.github.io/wt-cli/getting-started) — installation, shell setup, and worktree layout
+- [Commands](https://stabai.github.io/wt-cli/commands) — complete reference for every subcommand
+- [Configuration](https://stabai.github.io/wt-cli/configuration) — all `~/.wtrc` options
+- [Shell Integration](https://stabai.github.io/wt-cli/shell-integration) — how the cd protocol works
+- [Completions](https://stabai.github.io/wt-cli/completions) — tab completion and branch grouping
 
 ## Development
 
@@ -124,7 +125,7 @@ tests/
   config.test.ts
   git-integration.test.ts
   cli.test.ts
-docs/                   # user guide (GitHub Pages)
+docs/                   # user guide (VitePress → GitHub Pages)
 ```
 
 ## Contributing

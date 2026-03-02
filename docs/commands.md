@@ -1,8 +1,3 @@
----
-title: Commands
-nav_order: 2
----
-
 # Commands
 
 ## `wt add <branch> [base] [--no-cd]`
@@ -160,4 +155,4 @@ Outputs a shell completion script.
 |---|---|
 | `shell` | `zsh`, `bash`, or `fish` |
 
-See [Completions](./completions.md) for setup details.
+See [Completions](./completions) for setup details.

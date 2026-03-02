@@ -11,7 +11,10 @@
     "test": "bun test",
     "lint": "bunx biome check src/",
     "lint:fix": "bunx biome check --write src/",
-    "check": "bun test && bunx biome check src/"
+    "check": "bun test && bunx biome check src/",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "@clack/prompts": "^0.10.0",
@@ -20,6 +23,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.4",
-    "@types/bun": "^1.1.0"
+    "@types/bun": "^1.1.0",
+    "vitepress": "^1.6.3"
   }
 }

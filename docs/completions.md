@@ -1,8 +1,3 @@
----
-title: Completions
-nav_order: 5
----
-
 # Shell Completions
 
 `wt` provides tab completions for zsh, bash, and fish. Completions are context-aware — different subcommands complete different sets of branches.
@@ -39,7 +34,7 @@ Completions group branches to surface the most relevant ones first:
 3. **Active worktrees** — any branch currently checked out in a worktree
 4. **Remote-only branches** — on `origin` but not checked out locally
 
-Configure `owner` and `agent_prefixes` in [~/.wtrc](./configuration.md) to enable grouping.
+Configure `owner` and `agent_prefixes` in [`~/.wtrc`](./configuration) to enable grouping.
 
 ## How It Works
 
