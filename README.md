@@ -6,11 +6,15 @@ Built with [Bun](https://bun.sh) and TypeScript. Compiles to a single binary.
 
 ## Install
 
+### From source
+
 ```bash
 git clone https://github.com/stabai/wt-cli.git
 cd wt-cli
 bun run install-cli
 ```
+
+> **Coming soon:** prebuilt binaries for macOS and Linux via `curl` one-liner. See [#1](https://github.com/stabai/wt-cli/issues/1) or `.github/TODO-release.md`.
 
 Then add the shell wrapper to your `.zshrc` or `.bashrc`:
 
@@ -138,6 +142,7 @@ docs/                   # user guide (GitHub Pages)
 - Git commands go through helpers in `src/git.ts` using Bun's `$` shell template literal.
 - Format strings containing `%(...)` must be passed as variables to `$` template literals to avoid Bun shell parsing issues.
 - **No bash scripts.** Friends don't let friends write bash scripts. All scripts live in `scripts/` as TypeScript and run with `bun`.
+- **Keep tests and docs current.** New features and behavior changes should include corresponding test coverage and documentation updates. CI will catch missing tests; reviewers will catch missing docs.
 
 ## License
 

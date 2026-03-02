@@ -48,6 +48,9 @@ await $`git for-each-ref --format=%(refname:short) refs/heads/`.text();
 - CLI subprocess tests use `Bun.spawnSync`. Note: `bun test` cannot capture stdout from child `bun` processes that call `process.exit()` (citty does this for `--help`), so help output is tested via direct module import instead.
 - Config tests write to `~/.wtrc` — they save/restore the original file.
 
+### Tests and docs
+Keep tests and documentation up-to-date alongside code changes. New features need test coverage. Behavior changes need corresponding updates in `docs/` and `README.md`.
+
 ### No bash scripts
 All scripts live in `scripts/` as TypeScript and run with `bun`. Never add `.sh` files.
 
