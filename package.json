@@ -1,0 +1,19 @@
+{
+  "name": "wt-cli",
+  "version": "0.1.0",
+  "description": "Helper utility for working with git worktrees",
+  "type": "module",
+  "module": "src/index.ts",
+  "scripts": {
+    "build": "bun build --compile --outfile wt src/index.ts",
+    "dev": "bun run src/index.ts"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.10.0",
+    "citty": "^0.1.6",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.0"
+  }
+}
