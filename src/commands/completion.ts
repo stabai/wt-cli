@@ -1,4 +1,4 @@
-import type { CompletionType, WtArgsDef } from "../command";
+import type { CompletionType, WtArgsDef, WtCommand } from "../command";
 import { defineWtCommand, getWtArgs } from "../command";
 
 // ---------------------------------------------------------------------------
@@ -44,14 +44,17 @@ function buildSpecs(): SubcommandSpec[] {
   // This is safe because buildSpecs() is called lazily (first run() call),
   // well after all modules have finished initializing.
   const { subCommands } = require("../subcommands");
-  const seen = new Map<any, { name: string; aliases: string[] }>();
+  const seen = new Map<WtCommand, { name: string; aliases: string[] }>();
 
-  for (const [key, cmd] of Object.entries(subCommands) as [string, any][]) {
+  for (const [key, cmd] of Object.entries(subCommands) as [
+    string,
+    WtCommand,
+  ][]) {
     const existing = seen.get(cmd);
     if (existing) {
       existing.aliases.push(key);
     } else {
-      seen.set(cmd, { name: (cmd as any).meta?.name ?? key, aliases: [] });
+      seen.set(cmd, { name: cmd.meta.name, aliases: [] });
     }
   }
 
@@ -72,7 +75,7 @@ function buildSpecs(): SubcommandSpec[] {
     specs.push({
       name: entry.name,
       aliases: entry.aliases,
-      description: (cmd as any).meta?.description ?? "",
+      description: cmd.meta.description,
       args,
       flags,
     });

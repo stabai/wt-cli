@@ -28,7 +28,7 @@ export interface WtPositionalArg {
   completionType: CompletionType;
   description?: string;
   required?: boolean;
-  default?: any;
+  default?: string;
 }
 
 /** A boolean flag — same as citty, no extra fields. */
@@ -48,13 +48,22 @@ export interface WtCommandDef {
 }
 
 /**
+ * A command created by defineWtCommand. Extends citty's CommandDef with
+ * our completion metadata and a non-optional meta field.
+ */
+export interface WtCommand extends CommandDef {
+  meta: { name: string; description: string };
+  _wtArgs: WtArgsDef;
+}
+
+/**
  * Define a wt subcommand. Wraps citty's defineCommand but requires
  * completionType on positional args.
  *
- * Returns the citty command with a `_wtArgs` property that the
- * completion generator reads for introspection.
+ * Returns a WtCommand — the citty command with a `_wtArgs` property
+ * that the completion generator reads for introspection.
  */
-export function defineWtCommand(def: WtCommandDef) {
+export function defineWtCommand(def: WtCommandDef): WtCommand {
   // Strip completionType before passing to citty (it doesn't know about it)
   const cittyArgs: ArgsDef = {};
   if (def.args) {
@@ -74,15 +83,16 @@ export function defineWtCommand(def: WtCommandDef) {
     run: def.run,
   });
 
-  // Attach the full arg definitions for introspection by completion.ts
-  (cmd as any)._wtArgs = def.args ?? {};
-
-  return cmd;
+  return {
+    ...cmd,
+    meta: def.meta,
+    _wtArgs: def.args ?? {},
+  };
 }
 
 /**
  * Read completion metadata from a command created by defineWtCommand.
  */
-export function getWtArgs(cmd: any): WtArgsDef {
-  return cmd._wtArgs ?? {};
+export function getWtArgs(cmd: WtCommand): WtArgsDef {
+  return cmd._wtArgs;
 }
