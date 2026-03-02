@@ -1,65 +1,29 @@
-# wt — Git Worktree Manager
-
-`wt` is a CLI tool that makes working with [git worktrees](https://git-scm.com/docs/git-worktree) fast and ergonomic. It handles branch creation, directory management, and cleanup so you can switch between tasks without stashing or losing context.
-
-Built with [Bun](https://bun.sh), compiled to a single binary.
-
-## Why worktrees?
-
-With regular git branching, switching branches means stashing changes, rebuilding, and hoping nothing breaks. Worktrees give each branch its own directory, so you can:
-
-- Work on a feature while a CI build runs on another branch
-- Review a PR without leaving your current work
-- Keep multiple long-running branches alive without conflict
-
-`wt` removes the friction of managing worktree directories by hand.
-
 ---
+layout: home
 
-## Quick Start
+hero:
+  name: wt
+  text: Git Worktree Manager
+  tagline: Switch between branches without stashing. Keep your work alive in parallel directories.
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /getting-started
+    - theme: alt
+      text: Command Reference
+      link: /commands
 
-### Install
-
-```bash
-git clone https://github.com/stabai/wt-cli.git
-cd wt-cli
-bun run install-cli
-```
-
-This compiles the binary to `~/.local/bin/wt`. Make sure `~/.local/bin` is in your `PATH`.
-
-### Shell Wrapper
-
-Add this to your `.zshrc` or `.bashrc` — it lets `wt` change your shell's working directory:
-
-```bash
-wt() {
-  local cd_target
-  cd_target=$(command wt "$@")
-  local exit_code=$?
-  [[ $exit_code -ne 0 ]] && return $exit_code
-  [[ -n "$cd_target" ]] && cd "$cd_target"
-}
-```
-
-### Shell Completions
-
-```bash
-# zsh (add to .zshrc)
-source <(command wt completion zsh)
-
-# bash (add to .bashrc)
-eval "$(command wt completion bash)"
-
-# fish (add to config.fish)
-command wt completion fish | source
-```
-
+features:
+  - icon: ⚡
+    title: Instant Context Switching
+    details: Each branch gets its own directory. No more stashing, no more rebuilding. Work on a feature while CI runs on another branch.
+  - icon: 🧭
+    title: Smart Navigation
+    details: cd into worktrees by branch name. Missing branches are created on the fly with interactive prompts.
+  - icon: 📦
+    title: Single Binary
+    details: Built with Bun, compiled to a single binary. No runtime dependencies to install or manage.
+  - icon: 🧹
+    title: Clean Lifecycle
+    details: Create, navigate, and remove worktrees with automatic branch cleanup and stale metadata pruning.
 ---
-
-## Next Steps
-
-- [Commands](./commands.md) — full reference for every subcommand
-- [Configuration](./configuration.md) — customize defaults with `~/.wtrc`
-- [Shell Integration](./shell-integration.md) — how the cd protocol works
-- [Completions](./completions.md) — branch grouping and tab completion

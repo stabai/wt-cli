@@ -34,7 +34,7 @@ Completions group branches to surface the most relevant ones first:
 3. **Active worktrees** — any branch currently checked out in a worktree
 4. **Remote-only branches** — on `origin` but not checked out locally
 
-Configure `owner` and `agent_prefixes` in [~/.wtrc](./configuration.md) to enable grouping.
+Configure `owner` and `agent_prefixes` in [`~/.wtrc`](./configuration.md) to enable grouping.
 
 ## How It Works
 
