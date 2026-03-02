@@ -1,139 +1,347 @@
 import { defineCommand } from "citty";
 
-const ZSH_COMPLETION = `\
-#compdef wt
+// ---------------------------------------------------------------------------
+// Completion spec — single source of truth for all shell completion scripts.
+//
+// To add a new subcommand or flag, edit this spec. The shell-specific
+// generators below will pick up the changes automatically.
+// ---------------------------------------------------------------------------
 
-_wt() {
-  local -a subcommands
-  subcommands=(
-    'add:Create a new worktree with a new branch'
-    'checkout:Create a new worktree for an existing branch'
-    'switch:Create a new worktree for an existing branch'
-    'cd:Change to a worktree directory'
-    'ls:List all worktrees'
-    'rm:Remove a worktree and its branch'
-    'purge:Clean up stale worktree and branch metadata'
-    'completion:Output shell completion script'
-  )
+type CompletionType = "branches" | "worktree-branches" | "shells";
 
-  _arguments -C \\
-    '1:subcommand:->subcmd' \\
-    '*::arg:->args'
-
-  case $state in
-    subcmd)
-      _describe 'subcommand' subcommands
-      ;;
-    args)
-      case $words[1] in
-        add)
-          _arguments \\
-            '1:branch:->branches' \\
-            '2:base branch:->branches' \\
-            '--no-cd[Do not cd after creation]'
-          ;;
-        checkout|switch)
-          _arguments \\
-            '1:branch:->branches' \\
-            '--no-cd[Do not cd after creation]'
-          ;;
-        cd)
-          _arguments '1:branch:->branches'
-          ;;
-        rm)
-          _arguments \\
-            '1:branch:->wt_branches' \\
-            '-f[Force removal]' \\
-            '--keep-branch[Keep the local branch]'
-          ;;
-        ls)
-          _arguments '--status[Show status badges]'
-          ;;
-        purge)
-          _arguments '--branches[Also clean up branches with gone upstream]'
-          ;;
-        completion)
-          _arguments '1:shell:(zsh bash fish)'
-          ;;
-      esac
-
-      case $state in
-        branches)
-          local -a branches
-          branches=(\${(f)"$(command wt --complete branches 2>/dev/null)"})
-          _describe 'branch' branches
-          ;;
-        wt_branches)
-          local -a branches
-          branches=(\${(f)"$(command wt --complete worktree-branches 2>/dev/null)"})
-          _describe 'branch' branches
-          ;;
-      esac
-      ;;
-  esac
+interface FlagSpec {
+  /** The flag name without leading dashes (e.g. "no-cd", "f"). Single char = short flag. */
+  name: string;
+  description: string;
 }
 
-_wt "$@"`;
-
-const BASH_COMPLETION = `\
-_wt() {
-  local cur prev subcmd
-  COMPREPLY=()
-  cur="\${COMP_WORDS[COMP_CWORD]}"
-  prev="\${COMP_WORDS[COMP_CWORD-1]}"
-  subcmd="\${COMP_WORDS[1]}"
-
-  if [[ \${COMP_CWORD} -eq 1 ]]; then
-    COMPREPLY=( $(compgen -W "add checkout switch cd ls rm purge completion" -- "\${cur}") )
-    return 0
-  fi
-
-  case "\${subcmd}" in
-    add|checkout|switch|cd)
-      local branches
-      branches="$(command wt --complete branches 2>/dev/null)"
-      COMPREPLY=( $(compgen -W "\${branches}" -- "\${cur}") )
-      ;;
-    rm)
-      local branches
-      branches="$(command wt --complete worktree-branches 2>/dev/null)"
-      COMPREPLY=( $(compgen -W "\${branches}" -- "\${cur}") )
-      ;;
-    completion)
-      COMPREPLY=( $(compgen -W "zsh bash fish" -- "\${cur}") )
-      ;;
-  esac
+interface ArgSpec {
+  /** What kind of completions to offer for this argument position. */
+  completionType: CompletionType;
 }
 
-complete -F _wt wt`;
+interface SubcommandSpec {
+  name: string;
+  /** Additional names that invoke the same subcommand (e.g. "switch" for "checkout"). */
+  aliases?: string[];
+  description: string;
+  /** Positional arguments, in order. */
+  args?: ArgSpec[];
+  flags?: FlagSpec[];
+}
 
-const FISH_COMPLETION = `\
-# Disable file completions for wt
-complete -c wt -f
+const SUBCOMMANDS: SubcommandSpec[] = [
+  {
+    name: "add",
+    description: "Create a new worktree with a new branch",
+    args: [
+      { completionType: "branches" },
+      { completionType: "branches" },
+    ],
+    flags: [
+      { name: "no-cd", description: "Do not cd after creation" },
+    ],
+  },
+  {
+    name: "checkout",
+    aliases: ["switch"],
+    description: "Create a new worktree for an existing branch",
+    args: [{ completionType: "branches" }],
+    flags: [
+      { name: "no-cd", description: "Do not cd after creation" },
+    ],
+  },
+  {
+    name: "cd",
+    description: "Change to a worktree directory",
+    args: [{ completionType: "branches" }],
+  },
+  {
+    name: "ls",
+    description: "List all worktrees",
+    flags: [
+      { name: "status", description: "Show status badges" },
+    ],
+  },
+  {
+    name: "rm",
+    description: "Remove a worktree and its branch",
+    args: [{ completionType: "worktree-branches" }],
+    flags: [
+      { name: "f", description: "Force removal" },
+      { name: "keep-branch", description: "Keep the local branch" },
+    ],
+  },
+  {
+    name: "purge",
+    description: "Clean up stale worktree and branch metadata",
+    flags: [
+      { name: "branches", description: "Also clean up branches with gone upstream" },
+    ],
+  },
+  {
+    name: "completion",
+    description: "Output shell completion script",
+    args: [{ completionType: "shells" }],
+  },
+];
 
-# Subcommands
-complete -c wt -n '__fish_use_subcommand' -a 'add' -d 'Create a new worktree with a new branch'
-complete -c wt -n '__fish_use_subcommand' -a 'checkout' -d 'Create a new worktree for an existing branch'
-complete -c wt -n '__fish_use_subcommand' -a 'switch' -d 'Create a new worktree for an existing branch'
-complete -c wt -n '__fish_use_subcommand' -a 'cd' -d 'Change to a worktree directory'
-complete -c wt -n '__fish_use_subcommand' -a 'ls' -d 'List all worktrees'
-complete -c wt -n '__fish_use_subcommand' -a 'rm' -d 'Remove a worktree and its branch'
-complete -c wt -n '__fish_use_subcommand' -a 'purge' -d 'Clean up stale worktree and branch metadata'
-complete -c wt -n '__fish_use_subcommand' -a 'completion' -d 'Output shell completion script'
+/** All names including aliases, for the top-level subcommand list. */
+function allNames(cmd: SubcommandSpec): string[] {
+  return [cmd.name, ...(cmd.aliases ?? [])];
+}
 
-# Branch completions
-complete -c wt -n '__fish_seen_subcommand_from add checkout switch cd' -a '(command wt --complete branches 2>/dev/null)'
-complete -c wt -n '__fish_seen_subcommand_from rm' -a '(command wt --complete worktree-branches 2>/dev/null)'
+// ---------------------------------------------------------------------------
+// The --complete flag (handled in src/index.ts) returns branch lists at
+// runtime. The completion type maps to the argument passed:
+//
+//   "branches"           →  wt --complete branches
+//   "worktree-branches"  →  wt --complete worktree-branches
+//   "shells"             →  static list: zsh bash fish
+// ---------------------------------------------------------------------------
 
-# completion subcommand
-complete -c wt -n '__fish_seen_subcommand_from completion' -a 'zsh bash fish'
+/** zsh completion state name for a given completion type. */
+function zshState(type: CompletionType): string {
+  switch (type) {
+    case "branches": return "branches";
+    case "worktree-branches": return "wt_branches";
+    case "shells": return "shells";
+  }
+}
 
-# Flags
-complete -c wt -n '__fish_seen_subcommand_from add checkout switch' -l 'no-cd' -d 'Do not cd after creation'
-complete -c wt -n '__fish_seen_subcommand_from rm' -s 'f' -d 'Force removal'
-complete -c wt -n '__fish_seen_subcommand_from rm' -l 'keep-branch' -d 'Keep the local branch'
-complete -c wt -n '__fish_seen_subcommand_from ls' -l 'status' -d 'Show status badges'
-complete -c wt -n '__fish_seen_subcommand_from purge' -l 'branches' -d 'Also clean up branches with gone upstream'`;
+// ---------------------------------------------------------------------------
+// Zsh generator
+//
+// Uses _arguments for positional + flag parsing, and _describe for dynamic
+// branch lists fetched via `wt --complete`.
+// ---------------------------------------------------------------------------
+
+function generateZsh(): string {
+  const lines: string[] = ["#compdef wt", "", "_wt() {"];
+
+  // Subcommand list
+  lines.push("  local -a subcommands");
+  lines.push("  subcommands=(");
+  for (const cmd of SUBCOMMANDS) {
+    for (const name of allNames(cmd)) {
+      lines.push(`    '${name}:${cmd.description}'`);
+    }
+  }
+  lines.push("  )", "");
+
+  // Top-level argument dispatch
+  lines.push("  _arguments -C \\");
+  lines.push("    '1:subcommand:->subcmd' \\");
+  lines.push("    '*::arg:->args'", "");
+
+  lines.push("  case $state in");
+  lines.push("    subcmd)");
+  lines.push("      _describe 'subcommand' subcommands");
+  lines.push("      ;;");
+  lines.push("    args)");
+
+  // Per-subcommand arguments
+  lines.push("      case $words[1] in");
+  for (const cmd of SUBCOMMANDS) {
+    const names = allNames(cmd).join("|");
+    lines.push(`        ${names})`);
+
+    const argParts: string[] = [];
+    for (let i = 0; i < (cmd.args?.length ?? 0); i++) {
+      const arg = cmd.args![i];
+      argParts.push(`'${i + 1}:${arg.completionType}:->${zshState(arg.completionType)}'`);
+    }
+    for (const flag of cmd.flags ?? []) {
+      if (flag.name.length === 1) {
+        argParts.push(`'-${flag.name}[${flag.description}]'`);
+      } else {
+        argParts.push(`'--${flag.name}[${flag.description}]'`);
+      }
+    }
+
+    if (argParts.length === 1) {
+      lines.push(`          _arguments ${argParts[0]}`);
+    } else if (argParts.length > 1) {
+      lines.push("          _arguments \\");
+      for (let i = 0; i < argParts.length; i++) {
+        const suffix = i < argParts.length - 1 ? " \\" : "";
+        lines.push(`            ${argParts[i]}${suffix}`);
+      }
+    }
+
+    lines.push("          ;;");
+  }
+  lines.push("      esac", "");
+
+  // Dynamic completion states
+  lines.push("      case $state in");
+  lines.push("        branches)");
+  lines.push("          local -a branches");
+  lines.push(`          branches=(\${(f)"$(command wt --complete branches 2>/dev/null)"})`);
+  lines.push("          _describe 'branch' branches");
+  lines.push("          ;;");
+  lines.push("        wt_branches)");
+  lines.push("          local -a branches");
+  lines.push(`          branches=(\${(f)"$(command wt --complete worktree-branches 2>/dev/null)"})`);
+  lines.push("          _describe 'branch' branches");
+  lines.push("          ;;");
+  lines.push("        shells)");
+  lines.push("          _arguments '1:shell:(zsh bash fish)'");
+  lines.push("          ;;");
+  lines.push("      esac");
+  lines.push("      ;;");
+  lines.push("  esac");
+  lines.push("}", "");
+  lines.push(`_wt "$@"`);
+  return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Bash generator
+//
+// Uses compgen -W for word lists. Simpler than zsh — no argument position
+// tracking, just matches the current word against the right list.
+// ---------------------------------------------------------------------------
+
+function generateBash(): string {
+  const allSubcmdNames = SUBCOMMANDS.flatMap(allNames);
+  const lines: string[] = [];
+
+  lines.push("_wt() {");
+  lines.push("  local cur prev subcmd");
+  lines.push("  COMPREPLY=()");
+  lines.push(`  cur="\${COMP_WORDS[COMP_CWORD]}"`);
+  lines.push(`  prev="\${COMP_WORDS[COMP_CWORD-1]}"`);
+  lines.push(`  subcmd="\${COMP_WORDS[1]}"`);
+  lines.push("");
+
+  // First word: subcommand name
+  lines.push("  if [[ ${COMP_CWORD} -eq 1 ]]; then");
+  lines.push(`    COMPREPLY=( $(compgen -W "${allSubcmdNames.join(" ")}" -- "\${cur}") )`);
+  lines.push("    return 0");
+  lines.push("  fi", "");
+
+  // Per-subcommand completions
+  lines.push(`  case "\${subcmd}" in`);
+
+  // Group commands by completion type for cleaner output
+  const branchCmds: string[] = [];
+  const wtBranchCmds: string[] = [];
+  const shellCmds: string[] = [];
+  for (const cmd of SUBCOMMANDS) {
+    const names = allNames(cmd);
+    const type = cmd.args?.[0]?.completionType;
+    if (type === "branches") branchCmds.push(...names);
+    else if (type === "worktree-branches") wtBranchCmds.push(...names);
+    else if (type === "shells") shellCmds.push(...names);
+  }
+
+  if (branchCmds.length) {
+    lines.push(`    ${branchCmds.join("|")})`);
+    lines.push("      local branches");
+    lines.push(`      branches="$(command wt --complete branches 2>/dev/null)"`);
+    lines.push(`      COMPREPLY=( $(compgen -W "\${branches}" -- "\${cur}") )`);
+    lines.push("      ;;");
+  }
+  if (wtBranchCmds.length) {
+    lines.push(`    ${wtBranchCmds.join("|")})`);
+    lines.push("      local branches");
+    lines.push(`      branches="$(command wt --complete worktree-branches 2>/dev/null)"`);
+    lines.push(`      COMPREPLY=( $(compgen -W "\${branches}" -- "\${cur}") )`);
+    lines.push("      ;;");
+  }
+  if (shellCmds.length) {
+    lines.push(`    ${shellCmds.join("|")})`);
+    lines.push(`      COMPREPLY=( $(compgen -W "zsh bash fish" -- "\${cur}") )`);
+    lines.push("      ;;");
+  }
+
+  lines.push("  esac");
+  lines.push("}", "");
+  lines.push("complete -F _wt wt");
+  return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Fish generator
+//
+// Uses `complete -c wt` directives. Fish checks conditions via
+// __fish_use_subcommand and __fish_seen_subcommand_from.
+// ---------------------------------------------------------------------------
+
+function generateFish(): string {
+  const lines: string[] = [
+    "# Disable file completions for wt",
+    "complete -c wt -f",
+    "",
+    "# Subcommands",
+  ];
+
+  for (const cmd of SUBCOMMANDS) {
+    for (const name of allNames(cmd)) {
+      lines.push(
+        `complete -c wt -n '__fish_use_subcommand' -a '${name}' -d '${cmd.description}'`,
+      );
+    }
+  }
+
+  // Branch completions
+  lines.push("", "# Branch completions");
+  const branchCmds = SUBCOMMANDS.filter(
+    (c) => c.args?.[0]?.completionType === "branches",
+  ).flatMap(allNames);
+  if (branchCmds.length) {
+    lines.push(
+      `complete -c wt -n '__fish_seen_subcommand_from ${branchCmds.join(" ")}' -a '(command wt --complete branches 2>/dev/null)'`,
+    );
+  }
+
+  const wtBranchCmds = SUBCOMMANDS.filter(
+    (c) => c.args?.[0]?.completionType === "worktree-branches",
+  ).flatMap(allNames);
+  if (wtBranchCmds.length) {
+    lines.push(
+      `complete -c wt -n '__fish_seen_subcommand_from ${wtBranchCmds.join(" ")}' -a '(command wt --complete worktree-branches 2>/dev/null)'`,
+    );
+  }
+
+  // Shell completions
+  const shellCmds = SUBCOMMANDS.filter(
+    (c) => c.args?.[0]?.completionType === "shells",
+  ).flatMap(allNames);
+  if (shellCmds.length) {
+    lines.push("", "# completion subcommand");
+    lines.push(
+      `complete -c wt -n '__fish_seen_subcommand_from ${shellCmds.join(" ")}' -a 'zsh bash fish'`,
+    );
+  }
+
+  // Flags
+  const flagCmds = SUBCOMMANDS.filter((c) => c.flags?.length);
+  if (flagCmds.length) {
+    lines.push("", "# Flags");
+    for (const cmd of flagCmds) {
+      const names = allNames(cmd).join(" ");
+      for (const flag of cmd.flags!) {
+        if (flag.name.length === 1) {
+          lines.push(
+            `complete -c wt -n '__fish_seen_subcommand_from ${names}' -s '${flag.name}' -d '${flag.description}'`,
+          );
+        } else {
+          lines.push(
+            `complete -c wt -n '__fish_seen_subcommand_from ${names}' -l '${flag.name}' -d '${flag.description}'`,
+          );
+        }
+      }
+    }
+  }
+
+  return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Command definition
+// ---------------------------------------------------------------------------
 
 export default defineCommand({
   meta: {
@@ -152,13 +360,13 @@ export default defineCommand({
 
     switch (shell) {
       case "zsh":
-        process.stdout.write(ZSH_COMPLETION);
+        process.stdout.write(generateZsh());
         break;
       case "bash":
-        process.stdout.write(BASH_COMPLETION);
+        process.stdout.write(generateBash());
         break;
       case "fish":
-        process.stdout.write(FISH_COMPLETION);
+        process.stdout.write(generateFish());
         break;
       default:
         console.error(
