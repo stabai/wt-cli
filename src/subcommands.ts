@@ -10,12 +10,12 @@
  *   2. Import it here and add it to the map
  */
 import add from "./commands/add";
-import checkout from "./commands/checkout";
 import cd from "./commands/cd";
-import ls from "./commands/ls";
-import rm from "./commands/rm";
-import purge from "./commands/purge";
+import checkout from "./commands/checkout";
 import completion from "./commands/completion";
+import ls from "./commands/ls";
+import purge from "./commands/purge";
+import rm from "./commands/rm";
 
 export const subCommands = {
   add,

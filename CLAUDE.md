@@ -9,6 +9,9 @@
 ```bash
 bun install              # install dependencies
 bun test                 # run all tests (bun:test)
+bun run lint             # lint and format check (biome)
+bun run lint:fix         # auto-fix lint and format issues
+bun run check            # run tests + lint (full CI check)
 bun run build            # compile to ./wt binary
 bun run install-cli      # compile + install to ~/.local/bin/wt
 bun run src/index.ts     # run from source (dev mode)
@@ -48,16 +51,23 @@ await $`git for-each-ref --format=%(refname:short) refs/heads/`.text();
 - CLI subprocess tests use `Bun.spawnSync`. Note: `bun test` cannot capture stdout from child `bun` processes that call `process.exit()` (citty does this for `--help`), so help output is tested via direct module import instead.
 - Config tests write to `~/.wtrc` — they save/restore the original file.
 
+### Linting and formatting
+Biome handles both linting and formatting. Run `bun run lint` to check, `bun run lint:fix` to auto-fix. CI enforces this — fix lint issues before pushing.
+
 ### Tests and docs
 Keep tests and documentation up-to-date alongside code changes. New features need test coverage. Behavior changes need corresponding updates in `docs/` and `README.md`.
 
 ### No bash scripts
 All scripts live in `scripts/` as TypeScript and run with `bun`. Never add `.sh` files.
 
+### Git-host agnostic
+All git operations use standard `git` CLI commands. The tool should work with any git hosting provider (GitHub, GitLab, Gitea, etc.). Avoid introducing dependencies on any specific hosting provider's API or tooling.
+
 ### Dependencies
 - **citty** — CLI framework (subcommand definitions, arg parsing). Wrapped by `src/command.ts`.
 - **@clack/prompts** — interactive prompts (select, multiselect, confirm). Writes to stderr.
 - **picocolors** — terminal colors. Used for log dimming and status badges.
+- **@biomejs/biome** — linter and formatter (dev only).
 
 ## File locations
 
@@ -67,3 +77,11 @@ All scripts live in `scripts/` as TypeScript and run with `bun`. Never add `.sh`
 | Default worktree dir | `<repo-parent>/<repo-name>_trees/` |
 | Install target | `~/.local/bin/wt` |
 | User docs | `docs/` |
+
+## Working on this project
+
+### Issue quality
+Issues should be filed with sufficient detail for coding agents to tackle most of the work. Include clear reproduction steps, expected behavior, and relevant context about the affected commands or subsystems.
+
+### Question existing patterns
+The initial version was vibe coded. Feel empowered to question existing patterns, suggest refactors, and push back on conventions that don't make sense. If something looks wrong or overcomplicated, it probably is.

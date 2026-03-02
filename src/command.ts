@@ -16,8 +16,9 @@
  *     run({ args }) { ... },
  *   });
  */
+
+import type { ArgsDef, CommandDef } from "citty";
 import { defineCommand } from "citty";
-import type { CommandDef, ArgsDef } from "citty";
 
 export type CompletionType = "branches" | "worktree-branches" | "shells";
 

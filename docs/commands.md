@@ -110,7 +110,7 @@ Removes a worktree and (by default) deletes its local branch.
 **Branch cleanup:**
 - After removing the worktree, deletes the local branch and its remote tracking ref.
 - If the branch has unmerged commits, prompts before deleting (skipped with `-f`).
-- Does **not** delete the remote branch on origin — that's GitHub's job after PR merge.
+- Does **not** delete the remote branch on origin — that's typically handled by the hosting provider after merge.
 - Use `--keep-branch` to skip branch cleanup entirely.
 
 ```bash

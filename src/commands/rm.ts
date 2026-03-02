@@ -2,16 +2,16 @@ import * as p from "@clack/prompts";
 import { defineWtCommand } from "../command";
 import { loadConfig } from "../config";
 import {
-  repoRoot,
-  worktreeList,
-  worktreeRemove,
-  worktreeIsDirty,
-  hasUnpushedCommits,
-  hasUnmergedCommits,
+  currentWorktreeBranch,
   deleteBranch,
   deleteRemoteTrackingRef,
-  currentWorktreeBranch,
+  hasUnmergedCommits,
+  hasUnpushedCommits,
   log,
+  repoRoot,
+  worktreeIsDirty,
+  worktreeList,
+  worktreeRemove,
 } from "../git";
 
 export default defineWtCommand({

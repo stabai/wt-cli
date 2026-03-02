@@ -1,13 +1,13 @@
-import { resolve } from "path";
-import { existsSync } from "fs";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { defineWtCommand } from "../command";
 import { loadConfig } from "../config";
 import {
+  branchExistsLocally,
+  log,
   resolveBaseDir,
   worktreeAdd,
   worktreePath,
-  branchExistsLocally,
-  log,
 } from "../git";
 
 export default defineWtCommand({
@@ -22,7 +22,8 @@ export default defineWtCommand({
     base: {
       type: "positional",
       completionType: "branches",
-      description: "Base branch to create from (defaults to config default_branch)",
+      description:
+        "Base branch to create from (defaults to config default_branch)",
       required: false,
     },
     "no-cd": {

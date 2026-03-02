@@ -1,10 +1,6 @@
 import pc from "picocolors";
 import { defineWtCommand } from "../command";
-import {
-  worktreeList,
-  worktreeIsDirty,
-  hasUnpushedCommits,
-} from "../git";
+import { hasUnpushedCommits, worktreeIsDirty, worktreeList } from "../git";
 
 export default defineWtCommand({
   meta: { name: "ls", description: "List all worktrees" },
@@ -51,9 +47,7 @@ export default defineWtCommand({
       }
 
       const dirty = await worktreeIsDirty(wt.path);
-      const unpushed = wt.branch
-        ? await hasUnpushedCommits(wt.branch)
-        : false;
+      const unpushed = wt.branch ? await hasUnpushedCommits(wt.branch) : false;
 
       let badge: string;
       if (dirty) {

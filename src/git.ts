@@ -1,5 +1,5 @@
+import { basename, dirname, resolve } from "node:path";
 import { $ } from "bun";
-import { basename, dirname, resolve } from "path";
 import pc from "picocolors";
 import type { WtConfig } from "./config";
 
@@ -11,9 +11,7 @@ export function log(prefix: string, msg: string) {
 export async function repoRoot(): Promise<string> {
   // In a worktree, --show-toplevel returns the worktree root.
   // We need the common dir to find the actual repo root.
-  const commonDir = (
-    await $`git rev-parse --git-common-dir`.text()
-  ).trim();
+  const commonDir = (await $`git rev-parse --git-common-dir`.text()).trim();
   // commonDir is e.g. /path/to/repo/.git — resolve to parent
   if (commonDir === ".git") {
     return (await $`git rev-parse --show-toplevel`.text()).trim();
@@ -53,9 +51,7 @@ export interface WorktreeInfo {
 
 /** List all worktrees in a structured format. */
 export async function worktreeList(): Promise<WorktreeInfo[]> {
-  const output = (
-    await $`git worktree list --porcelain`.text()
-  ).trim();
+  const output = (await $`git worktree list --porcelain`.text()).trim();
 
   if (!output) return [];
 
@@ -96,9 +92,7 @@ export async function worktreeList(): Promise<WorktreeInfo[]> {
 /** Get the worktree path for a given directory (for detecting current worktree). */
 export async function currentWorktreeBranch(): Promise<string | null> {
   try {
-    const ref = (
-      await $`git symbolic-ref --short HEAD`.text()
-    ).trim();
+    const ref = (await $`git symbolic-ref --short HEAD`.text()).trim();
     return ref || null;
   } catch {
     return null;
@@ -183,9 +177,7 @@ export async function deleteRemoteTrackingRef(branch: string): Promise<void> {
 /** Check if a branch has uncommitted changes in its worktree. */
 export async function worktreeIsDirty(wtPath: string): Promise<boolean> {
   try {
-    const status = (
-      await $`git -C ${wtPath} status --porcelain`.text()
-    ).trim();
+    const status = (await $`git -C ${wtPath} status --porcelain`.text()).trim();
     return status.length > 0;
   } catch {
     return false;
@@ -303,9 +295,7 @@ export async function branchesWithGoneUpstream(): Promise<string[]> {
 export async function lastCommitterEmail(branch: string): Promise<string> {
   try {
     const fmt = "%ce";
-    return (
-      await $`git log -1 --format=${fmt} ${branch}`.text()
-    ).trim();
+    return (await $`git log -1 --format=${fmt} ${branch}`.text()).trim();
   } catch {
     return "";
   }

@@ -1,11 +1,11 @@
 import * as p from "@clack/prompts";
 import { defineWtCommand } from "../command";
 import {
-  worktreePrune,
   branchesWithGoneUpstream,
   deleteBranch,
   deleteRemoteTrackingRef,
   log,
+  worktreePrune,
 } from "../git";
 
 export default defineWtCommand({

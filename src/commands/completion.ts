@@ -1,5 +1,5 @@
-import { defineWtCommand, getWtArgs } from "../command";
 import type { CompletionType, WtArgsDef } from "../command";
+import { defineWtCommand, getWtArgs } from "../command";
 
 // ---------------------------------------------------------------------------
 // Build the completion spec by introspecting the actual command modules.
@@ -105,9 +105,12 @@ function allNames(cmd: SubcommandSpec): string[] {
 
 function zshState(type: CompletionType): string {
   switch (type) {
-    case "branches": return "branches";
-    case "worktree-branches": return "wt_branches";
-    case "shells": return "shells";
+    case "branches":
+      return "branches";
+    case "worktree-branches":
+      return "wt_branches";
+    case "shells":
+      return "shells";
   }
 }
 
@@ -148,7 +151,9 @@ function generateZsh(): string {
     const argParts: string[] = [];
     for (let i = 0; i < cmd.args.length; i++) {
       const arg = cmd.args[i];
-      argParts.push(`'${i + 1}:${arg.completionType}:->${zshState(arg.completionType)}'`);
+      argParts.push(
+        `'${i + 1}:${arg.completionType}:->${zshState(arg.completionType)}'`,
+      );
     }
     for (const flag of cmd.flags) {
       if (flag.name.length === 1) {
@@ -175,12 +180,16 @@ function generateZsh(): string {
   lines.push("      case $state in");
   lines.push("        branches)");
   lines.push("          local -a branches");
-  lines.push(`          branches=(\${(f)"$(command wt --complete branches 2>/dev/null)"})`);
+  lines.push(
+    `          branches=(\${(f)"$(command wt --complete branches 2>/dev/null)"})`,
+  );
   lines.push("          _describe 'branch' branches");
   lines.push("          ;;");
   lines.push("        wt_branches)");
   lines.push("          local -a branches");
-  lines.push(`          branches=(\${(f)"$(command wt --complete worktree-branches 2>/dev/null)"})`);
+  lines.push(
+    `          branches=(\${(f)"$(command wt --complete worktree-branches 2>/dev/null)"})`,
+  );
   lines.push("          _describe 'branch' branches");
   lines.push("          ;;");
   lines.push("        shells)");
@@ -214,7 +223,9 @@ function generateBash(): string {
   lines.push("");
 
   lines.push("  if [[ ${COMP_CWORD} -eq 1 ]]; then");
-  lines.push(`    COMPREPLY=( $(compgen -W "${allSubcmdNames.join(" ")}" -- "\${cur}") )`);
+  lines.push(
+    `    COMPREPLY=( $(compgen -W "${allSubcmdNames.join(" ")}" -- "\${cur}") )`,
+  );
   lines.push("    return 0");
   lines.push("  fi", "");
 
@@ -234,20 +245,26 @@ function generateBash(): string {
   if (branchCmds.length) {
     lines.push(`    ${branchCmds.join("|")})`);
     lines.push("      local branches");
-    lines.push(`      branches="$(command wt --complete branches 2>/dev/null)"`);
+    lines.push(
+      `      branches="$(command wt --complete branches 2>/dev/null)"`,
+    );
     lines.push(`      COMPREPLY=( $(compgen -W "\${branches}" -- "\${cur}") )`);
     lines.push("      ;;");
   }
   if (wtBranchCmds.length) {
     lines.push(`    ${wtBranchCmds.join("|")})`);
     lines.push("      local branches");
-    lines.push(`      branches="$(command wt --complete worktree-branches 2>/dev/null)"`);
+    lines.push(
+      `      branches="$(command wt --complete worktree-branches 2>/dev/null)"`,
+    );
     lines.push(`      COMPREPLY=( $(compgen -W "\${branches}" -- "\${cur}") )`);
     lines.push("      ;;");
   }
   if (shellCmds.length) {
     lines.push(`    ${shellCmds.join("|")})`);
-    lines.push(`      COMPREPLY=( $(compgen -W "zsh bash fish" -- "\${cur}") )`);
+    lines.push(
+      `      COMPREPLY=( $(compgen -W "zsh bash fish" -- "\${cur}") )`,
+    );
     lines.push("      ;;");
   }
 
@@ -281,27 +298,27 @@ function generateFish(): string {
   }
 
   lines.push("", "# Branch completions");
-  const branchCmds = getSpecs().filter(
-    (c) => c.args[0]?.completionType === "branches",
-  ).flatMap(allNames);
+  const branchCmds = getSpecs()
+    .filter((c) => c.args[0]?.completionType === "branches")
+    .flatMap(allNames);
   if (branchCmds.length) {
     lines.push(
       `complete -c wt -n '__fish_seen_subcommand_from ${branchCmds.join(" ")}' -a '(command wt --complete branches 2>/dev/null)'`,
     );
   }
 
-  const wtBranchCmds = getSpecs().filter(
-    (c) => c.args[0]?.completionType === "worktree-branches",
-  ).flatMap(allNames);
+  const wtBranchCmds = getSpecs()
+    .filter((c) => c.args[0]?.completionType === "worktree-branches")
+    .flatMap(allNames);
   if (wtBranchCmds.length) {
     lines.push(
       `complete -c wt -n '__fish_seen_subcommand_from ${wtBranchCmds.join(" ")}' -a '(command wt --complete worktree-branches 2>/dev/null)'`,
     );
   }
 
-  const shellCmds = getSpecs().filter(
-    (c) => c.args[0]?.completionType === "shells",
-  ).flatMap(allNames);
+  const shellCmds = getSpecs()
+    .filter((c) => c.args[0]?.completionType === "shells")
+    .flatMap(allNames);
   if (shellCmds.length) {
     lines.push("", "# completion subcommand");
     lines.push(

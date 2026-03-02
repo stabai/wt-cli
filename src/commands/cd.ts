@@ -1,16 +1,16 @@
-import { resolve } from "path";
+import { resolve } from "node:path";
 import * as p from "@clack/prompts";
 import { defineWtCommand } from "../command";
 import { loadConfig } from "../config";
 import {
-  repoRoot,
-  resolveBaseDir,
-  worktreePath,
-  worktreeAdd,
-  worktreeCheckout,
   branchExistsLocally,
   branchExistsOnOrigin,
   log,
+  repoRoot,
+  resolveBaseDir,
+  worktreeAdd,
+  worktreeCheckout,
+  worktreePath,
 } from "../git";
 
 export default defineWtCommand({
@@ -22,8 +22,7 @@ export default defineWtCommand({
     branch: {
       type: "positional",
       completionType: "branches",
-      description:
-        "Branch whose worktree to cd into (defaults to repo root)",
+      description: "Branch whose worktree to cd into (defaults to repo root)",
       required: false,
     },
   },

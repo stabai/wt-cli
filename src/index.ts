@@ -1,14 +1,14 @@
 import { defineCommand, runMain } from "citty";
 import { loadConfig } from "./config";
+import type { BranchGroup, BranchInfo } from "./git";
 import {
-  worktreeList,
-  localBranches,
-  remoteBranches,
   classifyBranch,
   gitConfig,
   lastCommitterEmail,
+  localBranches,
+  remoteBranches,
+  worktreeList,
 } from "./git";
-import type { BranchInfo, BranchGroup } from "./git";
 
 import { subCommands } from "./subcommands";
 

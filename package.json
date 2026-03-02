@@ -8,7 +8,10 @@
     "build": "bun build --compile --outfile wt src/index.ts",
     "install-cli": "bun run scripts/install.ts",
     "dev": "bun run src/index.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "lint": "bunx biome check src/",
+    "lint:fix": "bunx biome check --write src/",
+    "check": "bun test && bunx biome check src/"
   },
   "dependencies": {
     "@clack/prompts": "^0.10.0",
@@ -16,6 +19,7 @@
     "picocolors": "^1.1.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.4",
     "@types/bun": "^1.1.0"
   }
 }

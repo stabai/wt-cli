@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from "fs";
-import { resolve } from "path";
-import { homedir } from "os";
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { resolve } from "node:path";
 
 export interface WtConfig {
   default_branch: string;

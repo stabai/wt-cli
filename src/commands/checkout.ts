@@ -1,14 +1,14 @@
-import { resolve } from "path";
-import { existsSync } from "fs";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { defineWtCommand } from "../command";
 import { loadConfig } from "../config";
 import {
-  resolveBaseDir,
-  worktreeCheckout,
-  worktreePath,
   branchExistsLocally,
   branchExistsOnOrigin,
   log,
+  resolveBaseDir,
+  worktreeCheckout,
+  worktreePath,
 } from "../git";
 
 export default defineWtCommand({
