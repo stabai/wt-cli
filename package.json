@@ -6,7 +6,8 @@
   "module": "src/index.ts",
   "scripts": {
     "build": "bun build --compile --outfile wt src/index.ts",
-    "dev": "bun run src/index.ts"
+    "dev": "bun run src/index.ts",
+    "test": "bun test"
   },
   "dependencies": {
     "@clack/prompts": "^0.10.0",
