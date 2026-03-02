@@ -1,3 +1,8 @@
+---
+title: Commands
+nav_order: 2
+---
+
 # Commands
 
 ## `wt add <branch> [base] [--no-cd]`

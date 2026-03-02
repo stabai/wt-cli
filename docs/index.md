@@ -1,3 +1,8 @@
+---
+title: Home
+nav_order: 1
+---
+
 # wt — Git Worktree Manager
 
 `wt` is a CLI tool that makes working with [git worktrees](https://git-scm.com/docs/git-worktree) fast and ergonomic. It handles branch creation, directory management, and cleanup so you can switch between tasks without stashing or losing context.
@@ -13,6 +18,50 @@ With regular git branching, switching branches means stashing changes, rebuildin
 - Keep multiple long-running branches alive without conflict
 
 `wt` removes the friction of managing worktree directories by hand.
+
+---
+
+## Arranging your worktrees
+
+The key to a clean worktree setup is keeping worktree directories **outside** of your main repo folder, as siblings in the same parent directory. This avoids nesting repos inside each other and keeps your file tree easy to navigate.
+
+### Recommended layout
+
+```
+~/code/
+  my-project/              # main repo (bare or regular checkout)
+  my-project_trees/        # worktree directory (created by wt)
+    stabai/my-feature/     # one directory per branch
+    stabai/bugfix-login/
+    main/
+```
+
+This is the default behavior — `wt` automatically creates a `_trees` sibling directory next to your repo. If your repo is at `~/code/my-project`, worktrees are created under `~/code/my-project_trees/`.
+
+### Telling wt your setup
+
+If you want worktrees stored somewhere else, set `base_dir` in your `~/.wtrc` config file:
+
+```json
+{
+  "base_dir": "~/worktrees"
+}
+```
+
+This puts all worktrees under `~/worktrees/` regardless of where the repo lives. The `~` is expanded automatically.
+
+You can also configure other defaults like which branch `wt add` branches from and your username for branch grouping in completions:
+
+```json
+{
+  "default_branch": "main",
+  "base_dir": "~/worktrees",
+  "owner": "stabai",
+  "agent_prefixes": ["claude/", "devin/"]
+}
+```
+
+See [Configuration](./configuration.md) for full details on every option.
 
 ---
 

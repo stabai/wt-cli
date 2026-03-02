@@ -1,3 +1,8 @@
+---
+title: Configuration
+nav_order: 3
+---
+
 # Configuration
 
 `wt` reads configuration from `~/.wtrc`, a JSON file. All fields are optional.
