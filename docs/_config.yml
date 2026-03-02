@@ -1,0 +1,22 @@
+title: wt
+description: Git worktree manager CLI
+remote_theme: just-the-docs/just-the-docs
+
+# Serve from /wt-cli/ on GitHub Pages
+baseurl: /wt-cli
+
+color_scheme: dark
+
+# Back to repo link in header
+aux_links:
+  GitHub: https://github.com/stabai/wt-cli
+
+nav_sort: case_insensitive
+
+exclude:
+  - node_modules/
+  - src/
+  - tests/
+  - scripts/
+  - bun.lockb
+  - "*.ts"

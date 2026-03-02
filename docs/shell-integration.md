@@ -1,3 +1,8 @@
+---
+title: Shell Integration
+nav_order: 4
+---
+
 # Shell Integration
 
 ## The cd Problem

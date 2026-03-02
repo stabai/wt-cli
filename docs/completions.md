@@ -1,3 +1,8 @@
+---
+title: Shell Completions
+nav_order: 5
+---
+
 # Shell Completions
 
 `wt` provides tab completions for zsh, bash, and fish. Completions are context-aware — different subcommands complete different sets of branches.
