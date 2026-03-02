@@ -155,4 +155,4 @@ Outputs a shell completion script.
 |---|---|
 | `shell` | `zsh`, `bash`, or `fish` |
 
-See [Completions](./completions) for setup details.
+See [Completions](./completions.md) for setup details.

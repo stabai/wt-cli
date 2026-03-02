@@ -85,11 +85,11 @@ You can also configure other defaults like which branch `wt add` branches from a
 }
 ```
 
-See [Configuration](./configuration) for full details on every option.
+See [Configuration](./configuration.md) for full details on every option.
 
 ## Next Steps
 
-- [Commands](./commands) — full reference for every subcommand
-- [Configuration](./configuration) — customize defaults with `~/.wtrc`
-- [Shell Integration](./shell-integration) — how the cd protocol works
-- [Completions](./completions) — branch grouping and tab completion
+- [Commands](./commands.md) — full reference for every subcommand
+- [Configuration](./configuration.md) — customize defaults with `~/.wtrc`
+- [Shell Integration](./shell-integration.md) — how the cd protocol works
+- [Completions](./completions.md) — branch grouping and tab completion
