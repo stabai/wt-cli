@@ -1,6 +1,6 @@
-import { defineCommand } from "citty";
 import { resolve } from "path";
 import * as p from "@clack/prompts";
+import { defineWtCommand } from "../command";
 import { loadConfig } from "../config";
 import {
   repoRoot,
@@ -13,7 +13,7 @@ import {
   log,
 } from "../git";
 
-export default defineCommand({
+export default defineWtCommand({
   meta: {
     name: "cd",
     description: "Change to a worktree directory",
@@ -21,6 +21,7 @@ export default defineCommand({
   args: {
     branch: {
       type: "positional",
+      completionType: "branches",
       description:
         "Branch whose worktree to cd into (defaults to repo root)",
       required: false,

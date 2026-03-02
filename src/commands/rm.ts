@@ -1,5 +1,5 @@
-import { defineCommand } from "citty";
 import * as p from "@clack/prompts";
+import { defineWtCommand } from "../command";
 import { loadConfig } from "../config";
 import {
   repoRoot,
@@ -14,11 +14,12 @@ import {
   log,
 } from "../git";
 
-export default defineCommand({
+export default defineWtCommand({
   meta: { name: "rm", description: "Remove a worktree and its branch" },
   args: {
     branch: {
       type: "positional",
+      completionType: "worktree-branches",
       description:
         "Branch whose worktree to remove (defaults to current worktree)",
       required: false,

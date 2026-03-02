@@ -1,6 +1,6 @@
-import { defineCommand } from "citty";
 import { resolve } from "path";
 import { existsSync } from "fs";
+import { defineWtCommand } from "../command";
 import { loadConfig } from "../config";
 import {
   resolveBaseDir,
@@ -10,16 +10,18 @@ import {
   log,
 } from "../git";
 
-export default defineCommand({
+export default defineWtCommand({
   meta: { name: "add", description: "Create a new worktree with a new branch" },
   args: {
     branch: {
       type: "positional",
+      completionType: "branches",
       description: "Name of the new branch to create",
       required: true,
     },
     base: {
       type: "positional",
+      completionType: "branches",
       description: "Base branch to create from (defaults to config default_branch)",
       required: false,
     },

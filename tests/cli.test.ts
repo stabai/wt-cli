@@ -59,6 +59,25 @@ describe("CLI command registration", () => {
     expect(rm.args?.f).toBeDefined();
     expect(rm.args?.["keep-branch"]).toBeDefined();
   });
+
+  test("all commands carry _wtArgs completion metadata", async () => {
+    const { getWtArgs } = await import("../src/command");
+    const add = (await import("../src/commands/add")).default;
+    const rm = (await import("../src/commands/rm")).default;
+    const completion = (await import("../src/commands/completion")).default;
+
+    const addArgs = getWtArgs(add);
+    expect(addArgs.branch?.type).toBe("positional");
+    expect((addArgs.branch as any)?.completionType).toBe("branches");
+    expect(addArgs.base?.type).toBe("positional");
+    expect((addArgs.base as any)?.completionType).toBe("branches");
+
+    const rmArgs = getWtArgs(rm);
+    expect((rmArgs.branch as any)?.completionType).toBe("worktree-branches");
+
+    const compArgs = getWtArgs(completion);
+    expect((compArgs.shell as any)?.completionType).toBe("shells");
+  });
 });
 
 describe("CLI subprocess", () => {

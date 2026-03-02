@@ -1,94 +1,97 @@
-import { defineCommand } from "citty";
+import { defineWtCommand, getWtArgs } from "../command";
+import type { CompletionType, WtArgsDef } from "../command";
 
 // ---------------------------------------------------------------------------
-// Completion spec — single source of truth for all shell completion scripts.
+// Build the completion spec by introspecting the actual command modules.
 //
-// To add a new subcommand or flag, edit this spec. The shell-specific
-// generators below will pick up the changes automatically.
+// - name, description → from each command's meta (set by defineWtCommand)
+// - positional completion types → from each command's _wtArgs (set by defineWtCommand)
+// - flags → from each command's _wtArgs
+// - aliases → detected from the subCommands registry (two keys → same object)
+//
+// To add a new subcommand:
+//   1. Create src/commands/<name>.ts using defineWtCommand
+//   2. Register it in src/subcommands.ts
+// That's it — the shell completion scripts update automatically.
 // ---------------------------------------------------------------------------
-
-type CompletionType = "branches" | "worktree-branches" | "shells";
 
 interface FlagSpec {
-  /** The flag name without leading dashes (e.g. "no-cd", "f"). Single char = short flag. */
   name: string;
   description: string;
 }
 
 interface ArgSpec {
-  /** What kind of completions to offer for this argument position. */
   completionType: CompletionType;
 }
 
 interface SubcommandSpec {
   name: string;
-  /** Additional names that invoke the same subcommand (e.g. "switch" for "checkout"). */
-  aliases?: string[];
+  aliases: string[];
   description: string;
-  /** Positional arguments, in order. */
-  args?: ArgSpec[];
-  flags?: FlagSpec[];
+  args: ArgSpec[];
+  flags: FlagSpec[];
 }
 
-const SUBCOMMANDS: SubcommandSpec[] = [
-  {
-    name: "add",
-    description: "Create a new worktree with a new branch",
-    args: [
-      { completionType: "branches" },
-      { completionType: "branches" },
-    ],
-    flags: [
-      { name: "no-cd", description: "Do not cd after creation" },
-    ],
-  },
-  {
-    name: "checkout",
-    aliases: ["switch"],
-    description: "Create a new worktree for an existing branch",
-    args: [{ completionType: "branches" }],
-    flags: [
-      { name: "no-cd", description: "Do not cd after creation" },
-    ],
-  },
-  {
-    name: "cd",
-    description: "Change to a worktree directory",
-    args: [{ completionType: "branches" }],
-  },
-  {
-    name: "ls",
-    description: "List all worktrees",
-    flags: [
-      { name: "status", description: "Show status badges" },
-    ],
-  },
-  {
-    name: "rm",
-    description: "Remove a worktree and its branch",
-    args: [{ completionType: "worktree-branches" }],
-    flags: [
-      { name: "f", description: "Force removal" },
-      { name: "keep-branch", description: "Keep the local branch" },
-    ],
-  },
-  {
-    name: "purge",
-    description: "Clean up stale worktree and branch metadata",
-    flags: [
-      { name: "branches", description: "Also clean up branches with gone upstream" },
-    ],
-  },
-  {
-    name: "completion",
-    description: "Output shell completion script",
-    args: [{ completionType: "shells" }],
-  },
-];
+/**
+ * Build SubcommandSpecs by inspecting the subCommands registry.
+ *
+ * If two registry keys point to the same command object (by reference),
+ * the second is an alias of the first.
+ */
+function buildSpecs(): SubcommandSpec[] {
+  // Dynamic require breaks the circular import chain:
+  //   subcommands.ts → completion.ts → subcommands.ts
+  // This is safe because buildSpecs() is called lazily (first run() call),
+  // well after all modules have finished initializing.
+  const { subCommands } = require("../subcommands");
+  const seen = new Map<any, { name: string; aliases: string[] }>();
 
-/** All names including aliases, for the top-level subcommand list. */
+  for (const [key, cmd] of Object.entries(subCommands) as [string, any][]) {
+    const existing = seen.get(cmd);
+    if (existing) {
+      existing.aliases.push(key);
+    } else {
+      seen.set(cmd, { name: (cmd as any).meta?.name ?? key, aliases: [] });
+    }
+  }
+
+  const specs: SubcommandSpec[] = [];
+  for (const [cmd, entry] of seen) {
+    const wtArgs: WtArgsDef = getWtArgs(cmd);
+    const args: ArgSpec[] = [];
+    const flags: FlagSpec[] = [];
+
+    for (const [name, def] of Object.entries(wtArgs)) {
+      if (def.type === "positional") {
+        args.push({ completionType: def.completionType });
+      } else if (def.type === "boolean") {
+        flags.push({ name, description: def.description ?? "" });
+      }
+    }
+
+    specs.push({
+      name: entry.name,
+      aliases: entry.aliases,
+      description: (cmd as any).meta?.description ?? "",
+      args,
+      flags,
+    });
+  }
+
+  return specs;
+}
+
+// Lazily built on first use to avoid circular import issues
+// (subcommands.ts imports completion.ts which imports subcommands.ts)
+let _specs: SubcommandSpec[] | null = null;
+function getSpecs(): SubcommandSpec[] {
+  if (!_specs) _specs = buildSpecs();
+  return _specs;
+}
+
+/** All names including aliases. */
 function allNames(cmd: SubcommandSpec): string[] {
-  return [cmd.name, ...(cmd.aliases ?? [])];
+  return [cmd.name, ...cmd.aliases];
 }
 
 // ---------------------------------------------------------------------------
@@ -100,7 +103,6 @@ function allNames(cmd: SubcommandSpec): string[] {
 //   "shells"             →  static list: zsh bash fish
 // ---------------------------------------------------------------------------
 
-/** zsh completion state name for a given completion type. */
 function zshState(type: CompletionType): string {
   switch (type) {
     case "branches": return "branches";
@@ -119,17 +121,15 @@ function zshState(type: CompletionType): string {
 function generateZsh(): string {
   const lines: string[] = ["#compdef wt", "", "_wt() {"];
 
-  // Subcommand list
   lines.push("  local -a subcommands");
   lines.push("  subcommands=(");
-  for (const cmd of SUBCOMMANDS) {
+  for (const cmd of getSpecs()) {
     for (const name of allNames(cmd)) {
       lines.push(`    '${name}:${cmd.description}'`);
     }
   }
   lines.push("  )", "");
 
-  // Top-level argument dispatch
   lines.push("  _arguments -C \\");
   lines.push("    '1:subcommand:->subcmd' \\");
   lines.push("    '*::arg:->args'", "");
@@ -140,18 +140,17 @@ function generateZsh(): string {
   lines.push("      ;;");
   lines.push("    args)");
 
-  // Per-subcommand arguments
   lines.push("      case $words[1] in");
-  for (const cmd of SUBCOMMANDS) {
+  for (const cmd of getSpecs()) {
     const names = allNames(cmd).join("|");
     lines.push(`        ${names})`);
 
     const argParts: string[] = [];
-    for (let i = 0; i < (cmd.args?.length ?? 0); i++) {
-      const arg = cmd.args![i];
+    for (let i = 0; i < cmd.args.length; i++) {
+      const arg = cmd.args[i];
       argParts.push(`'${i + 1}:${arg.completionType}:->${zshState(arg.completionType)}'`);
     }
-    for (const flag of cmd.flags ?? []) {
+    for (const flag of cmd.flags) {
       if (flag.name.length === 1) {
         argParts.push(`'-${flag.name}[${flag.description}]'`);
       } else {
@@ -173,7 +172,6 @@ function generateZsh(): string {
   }
   lines.push("      esac", "");
 
-  // Dynamic completion states
   lines.push("      case $state in");
   lines.push("        branches)");
   lines.push("          local -a branches");
@@ -204,7 +202,7 @@ function generateZsh(): string {
 // ---------------------------------------------------------------------------
 
 function generateBash(): string {
-  const allSubcmdNames = SUBCOMMANDS.flatMap(allNames);
+  const allSubcmdNames = getSpecs().flatMap(allNames);
   const lines: string[] = [];
 
   lines.push("_wt() {");
@@ -215,22 +213,19 @@ function generateBash(): string {
   lines.push(`  subcmd="\${COMP_WORDS[1]}"`);
   lines.push("");
 
-  // First word: subcommand name
   lines.push("  if [[ ${COMP_CWORD} -eq 1 ]]; then");
   lines.push(`    COMPREPLY=( $(compgen -W "${allSubcmdNames.join(" ")}" -- "\${cur}") )`);
   lines.push("    return 0");
   lines.push("  fi", "");
 
-  // Per-subcommand completions
   lines.push(`  case "\${subcmd}" in`);
 
-  // Group commands by completion type for cleaner output
   const branchCmds: string[] = [];
   const wtBranchCmds: string[] = [];
   const shellCmds: string[] = [];
-  for (const cmd of SUBCOMMANDS) {
+  for (const cmd of getSpecs()) {
     const names = allNames(cmd);
-    const type = cmd.args?.[0]?.completionType;
+    const type = cmd.args[0]?.completionType;
     if (type === "branches") branchCmds.push(...names);
     else if (type === "worktree-branches") wtBranchCmds.push(...names);
     else if (type === "shells") shellCmds.push(...names);
@@ -277,7 +272,7 @@ function generateFish(): string {
     "# Subcommands",
   ];
 
-  for (const cmd of SUBCOMMANDS) {
+  for (const cmd of getSpecs()) {
     for (const name of allNames(cmd)) {
       lines.push(
         `complete -c wt -n '__fish_use_subcommand' -a '${name}' -d '${cmd.description}'`,
@@ -285,10 +280,9 @@ function generateFish(): string {
     }
   }
 
-  // Branch completions
   lines.push("", "# Branch completions");
-  const branchCmds = SUBCOMMANDS.filter(
-    (c) => c.args?.[0]?.completionType === "branches",
+  const branchCmds = getSpecs().filter(
+    (c) => c.args[0]?.completionType === "branches",
   ).flatMap(allNames);
   if (branchCmds.length) {
     lines.push(
@@ -296,8 +290,8 @@ function generateFish(): string {
     );
   }
 
-  const wtBranchCmds = SUBCOMMANDS.filter(
-    (c) => c.args?.[0]?.completionType === "worktree-branches",
+  const wtBranchCmds = getSpecs().filter(
+    (c) => c.args[0]?.completionType === "worktree-branches",
   ).flatMap(allNames);
   if (wtBranchCmds.length) {
     lines.push(
@@ -305,9 +299,8 @@ function generateFish(): string {
     );
   }
 
-  // Shell completions
-  const shellCmds = SUBCOMMANDS.filter(
-    (c) => c.args?.[0]?.completionType === "shells",
+  const shellCmds = getSpecs().filter(
+    (c) => c.args[0]?.completionType === "shells",
   ).flatMap(allNames);
   if (shellCmds.length) {
     lines.push("", "# completion subcommand");
@@ -316,13 +309,12 @@ function generateFish(): string {
     );
   }
 
-  // Flags
-  const flagCmds = SUBCOMMANDS.filter((c) => c.flags?.length);
+  const flagCmds = getSpecs().filter((c) => c.flags.length);
   if (flagCmds.length) {
     lines.push("", "# Flags");
     for (const cmd of flagCmds) {
       const names = allNames(cmd).join(" ");
-      for (const flag of cmd.flags!) {
+      for (const flag of cmd.flags) {
         if (flag.name.length === 1) {
           lines.push(
             `complete -c wt -n '__fish_seen_subcommand_from ${names}' -s '${flag.name}' -d '${flag.description}'`,
@@ -343,7 +335,7 @@ function generateFish(): string {
 // Command definition
 // ---------------------------------------------------------------------------
 
-export default defineCommand({
+export default defineWtCommand({
   meta: {
     name: "completion",
     description: "Output shell completion script",
@@ -351,6 +343,7 @@ export default defineCommand({
   args: {
     shell: {
       type: "positional",
+      completionType: "shells",
       description: "Shell to generate completions for (zsh, bash, fish)",
       required: true,
     },

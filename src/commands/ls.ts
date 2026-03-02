@@ -1,12 +1,12 @@
-import { defineCommand } from "citty";
 import pc from "picocolors";
+import { defineWtCommand } from "../command";
 import {
   worktreeList,
   worktreeIsDirty,
   hasUnpushedCommits,
 } from "../git";
 
-export default defineCommand({
+export default defineWtCommand({
   meta: { name: "ls", description: "List all worktrees" },
   args: {
     status: {

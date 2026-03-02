@@ -10,13 +10,7 @@ import {
 } from "./git";
 import type { BranchInfo, BranchGroup } from "./git";
 
-import add from "./commands/add";
-import checkout from "./commands/checkout";
-import cd from "./commands/cd";
-import ls from "./commands/ls";
-import rm from "./commands/rm";
-import purge from "./commands/purge";
-import completion from "./commands/completion";
+import { subCommands } from "./subcommands";
 
 // Handle --complete for dynamic shell completions
 async function handleComplete(args: string[]) {
@@ -107,16 +101,7 @@ if (completeIdx !== -1) {
       version: "0.1.0",
       description: "Helper utility for working with git worktrees",
     },
-    subCommands: {
-      add,
-      checkout,
-      switch: checkout,
-      cd,
-      ls,
-      rm,
-      purge,
-      completion,
-    },
+    subCommands,
   });
 
   runMain(main);

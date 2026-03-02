@@ -17,9 +17,11 @@ bun run src/index.ts     # run from source (dev mode)
 ## Architecture
 
 - **src/index.ts** — entrypoint. Registers subcommands via citty. Also handles `--complete` flag for dynamic shell completions.
+- **src/command.ts** — `defineWtCommand()` wrapper around citty's `defineCommand`. Requires `completionType` on positional args so shell completions stay in sync with command definitions.
+- **src/subcommands.ts** — single registry mapping names to command modules. Both `index.ts` (runtime) and `completion.ts` (shell script generation) use this. Aliases (e.g. `switch` → `checkout`) are declared here.
 - **src/config.ts** — loads and validates `~/.wtrc` (JSON config file).
 - **src/git.ts** — all git subprocess calls using Bun's `$` template literal shell. Also contains `classifyBranch()` for grouping branches in completions.
-- **src/commands/*.ts** — one file per subcommand (add, checkout, cd, ls, rm, purge, completion). Each exports a citty command definition.
+- **src/commands/*.ts** — one file per subcommand (add, checkout, cd, ls, rm, purge, completion). Each uses `defineWtCommand()` from `src/command.ts`.
 
 ## Critical conventions
 
@@ -50,7 +52,7 @@ await $`git for-each-ref --format=%(refname:short) refs/heads/`.text();
 All scripts live in `scripts/` as TypeScript and run with `bun`. Never add `.sh` files.
 
 ### Dependencies
-- **citty** — CLI framework (subcommand definitions, arg parsing).
+- **citty** — CLI framework (subcommand definitions, arg parsing). Wrapped by `src/command.ts`.
 - **@clack/prompts** — interactive prompts (select, multiselect, confirm). Writes to stderr.
 - **picocolors** — terminal colors. Used for log dimming and status badges.
 

@@ -1,5 +1,5 @@
-import { defineCommand } from "citty";
 import * as p from "@clack/prompts";
+import { defineWtCommand } from "../command";
 import {
   worktreePrune,
   branchesWithGoneUpstream,
@@ -8,7 +8,7 @@ import {
   log,
 } from "../git";
 
-export default defineCommand({
+export default defineWtCommand({
   meta: {
     name: "purge",
     description: "Clean up stale worktree and branch metadata",
