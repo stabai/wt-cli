@@ -10,6 +10,7 @@
 bun install              # install dependencies
 bun test                 # run all tests (bun:test)
 bun run build            # compile to ./wt binary
+bun run install-cli      # compile + install to ~/.local/bin/wt
 bun run src/index.ts     # run from source (dev mode)
 ```
 
@@ -44,6 +45,9 @@ await $`git for-each-ref --format=%(refname:short) refs/heads/`.text();
 - Git integration tests create a temporary repo in `beforeAll` and clean up in `afterAll`. They disable GPG signing with `--no-gpg-sign` and `commit.gpgSign false`.
 - CLI subprocess tests use `Bun.spawnSync`. Note: `bun test` cannot capture stdout from child `bun` processes that call `process.exit()` (citty does this for `--help`), so help output is tested via direct module import instead.
 - Config tests write to `~/.wtrc` — they save/restore the original file.
+
+### No bash scripts
+All scripts live in `scripts/` as TypeScript and run with `bun`. Never add `.sh` files.
 
 ### Dependencies
 - **citty** — CLI framework (subcommand definitions, arg parsing).

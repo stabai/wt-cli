@@ -9,7 +9,7 @@ Built with [Bun](https://bun.sh) and TypeScript. Compiles to a single binary.
 ```bash
 git clone https://github.com/stabai/wt-cli.git
 cd wt-cli
-./build.sh
+bun run install-cli
 ```
 
 Then add the shell wrapper to your `.zshrc` or `.bashrc`:
@@ -95,8 +95,9 @@ Tests cover:
 ### Build
 
 ```bash
-bun run build                    # compile to ./wt
-./build.sh                       # compile + install to ~/.local/bin/wt
+bun run build                    # compile to ./wt (local dev)
+bun run install-cli              # compile + install to ~/.local/bin/wt
+bun run install-cli /usr/local/bin  # custom install directory
 ```
 
 ### Project structure
@@ -136,6 +137,7 @@ docs/                   # user guide (GitHub Pages)
 - Use `@clack/prompts` for interactive UI and `picocolors` for colors.
 - Git commands go through helpers in `src/git.ts` using Bun's `$` shell template literal.
 - Format strings containing `%(...)` must be passed as variables to `$` template literals to avoid Bun shell parsing issues.
+- **No bash scripts.** Friends don't let friends write bash scripts. All scripts live in `scripts/` as TypeScript and run with `bun`.
 
 ## License
 

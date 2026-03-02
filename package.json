@@ -6,6 +6,7 @@
   "module": "src/index.ts",
   "scripts": {
     "build": "bun build --compile --outfile wt src/index.ts",
+    "install-cli": "bun run scripts/install.ts",
     "dev": "bun run src/index.ts",
     "test": "bun test"
   },

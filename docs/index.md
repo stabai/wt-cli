@@ -23,7 +23,7 @@ With regular git branching, switching branches means stashing changes, rebuildin
 ```bash
 git clone https://github.com/stabai/wt-cli.git
 cd wt-cli
-./build.sh
+bun run install-cli
 ```
 
 This compiles the binary to `~/.local/bin/wt`. Make sure `~/.local/bin` is in your `PATH`.
